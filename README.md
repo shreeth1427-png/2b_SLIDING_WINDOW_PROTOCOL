@@ -1,6 +1,5 @@
 # 2b IMPLEMENTATION OF SLIDING WINDOW PROTOCOL
 ## AIM
-TO IMPLEMENTATION OF SLIDING WINDOW PROTOCOL
 ## ALGORITHM:
 1. Start the program.
 2. Get the frame size from the user
@@ -9,91 +8,50 @@ TO IMPLEMENTATION OF SLIDING WINDOW PROTOCOL
 5. If your frames reach the server it will send ACK signal to client
 6. Stop the Program
 ## PROGRAM
-## SERVER
-```
+Server.py
+```p
 import socket
-import json
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket()
+s.bind(('localhost', 8000))
+s.listen(1)
 
-server.bind(('localhost', 1234))
-server.listen(1)
-
-print("Server is waiting for client...")
-
-conn, addr = server.accept()
-
-print("Client connected:", addr)
-
-reader = conn.makefile("r", encoding="utf-8")
+print("Waiting for connection...")
+conn, addr = s.accept()
+print("Connected to", addr)
 
 while True:
-    data = reader.readline()
+    data = conn.recv(1024).decode()
 
     if not data:
         break
 
-    packet = json.loads(data)
-    frames = packet["frames"]
+    print("Frames received:", data)
 
-    print("Received frames:", frames)
-
-    conn.sendall("Acknowledgement received from the server\n".encode())
-
-    print("ACK sent to client")
+    ack = "ACK for " + data
+    conn.send(ack.encode())
 
 conn.close()
-server.close()
 ```
-## CLIENT
-```
+ Client.py
+```p
 import socket
-import json
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket()
+s.connect(('localhost', 8000))
 
-client.connect(('localhost', 1234))
+n = int(input("Enter number of frames: "))
+w = int(input("Enter window size: "))
 
-print("Connected to server")
-
-total = int(input("Enter number of frames to send: "))
-
-window = int(input("Enter Window Size: "))
-
-if total <= 0 or window <= 0:
-    print("Enter positive numbers")
-    client.close()
-    exit()
-
-frames = list(range(1, total + 1))
-
-reader = client.makefile("r", encoding="utf-8")
-
-start = 0
-
-while start < len(frames):
-
-    end = min(start + window, len(frames))
-
-    batch = frames[start:end]
-
-    print("Sending frames:", batch)
-
-    message = json.dumps({"frames": batch}) + "\n"
-
-    client.sendall(message.encode())
-
-    ack = reader.readline().strip()
-
-    print("Server:", ack)
-
-    start = end
-
-client.close()
+frames = list(range(1, n+1))
+i = 0
 ```
 ## OUPUT
-<img width="1600" height="900" alt="WhatsApp Image 2026-11-04 at 8 31 01 AM" src="https://github.com/user-attachments/assets/f422e2c1-3d67-4aa2-85d4-2db3f4f12148" />
+### server:
+<img width="1917" height="1078" alt="Screenshot 2026-11-03 135312" src="https://github.com/user-attachments/assets/397f7bfa-5863-47be-b773-a5bf83938a35" />
 
+### client:
+<img width="1910" height="1077" alt="Screenshot 2026-11-03 135301" src="https://github.com/user-attachments/assets/e69b0a5e-1188-4165-bc1d-059deece67af" />
 
 ## RESULT
 Thus, python program to perform stop and wait protocol was successfully executed
